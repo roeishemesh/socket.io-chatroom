@@ -1,6 +1,6 @@
 from peewee import *
 
-mysql_db = MySQLDatabase('chat database', user='root', password='1431',
+mysql_db = MySQLDatabase('chat database', user='****', password='****',
                          host='localhost')
 
 
