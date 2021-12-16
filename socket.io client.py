@@ -21,37 +21,37 @@ def print_admin_message(admin_dict):
         print(admin_dict.get("username") + " is active to chatroom")
 
 
-@sio.on('wrong login')
-def print_message():
-    print("your username or password are wrong\nplease try again")
-    login()
-
-
 @sio.on('message from client')
 def print_message(msg_dict):
     print(f"{msg_dict.get('sender')}>>>{msg_dict.get('message')}")
 
 
 def login():
-    sio.connect('http://localhost:5000')
-    username = input("please enter your username\n")
-    password = input("please enter your password\n")
-    sio.emit('send user name and password', {"username": username, "password": password})
+    while True:
+        username = input("please enter your username\n")
+        password = input("please enter your password\n")
+        user_chack = sio.call('send user name and password', {"username": username, "password": password})
+        if user_chack == 'connected':
+            print("LOGIN OK")
+            break
+        else:
+            print("your username or password are wrong\nplease try again")
+            continue
 
 
 def send_message(room):
     while True:
         client_msg = input("")
         if client_msg == "Q":
-            sio.emit('leave room', data=room)
+            sio.call('leave room', data=room)
             break
         else:
             sio.emit('send message to chatroom', data=[client_msg, room])
 
 
-@sio.on('connected')
-def print_message():
-    print("LOGIN OK")
+if __name__ == '__main__':
+    sio.connect('http://localhost:5000')
+    login()
     while True:
         print("""hello and welcome to the socket.io chatroom
 to View existing rooms      v
@@ -65,7 +65,7 @@ to disconnect               q""")
                 print("there isn't open chatroom now please")
                 room_name = input("please write the new chatroom name:\n")
                 sio.emit('enter to chatroom', data=room_name)
-                print(f"welcome to {room_name} chatroom")
+                print(f"welcome to {room_name} chatroom if you want to leave the chatroom please write 'Q'")
                 send_message(room_name)
 
             if bool(rooms):
@@ -80,13 +80,8 @@ to disconnect               q""")
         if client_answer == "n":
             room_name = input("please write the new chatroom name:\n")
             sio.emit('enter to chatroom', data=room_name)
-            print(f"welcome to {room_name} chatroom")
+            print(f"welcome to {room_name} chatroom if you want to leave the chatroom please write 'Q'")
             send_message(room_name)
         if client_answer == "q":
             sio.disconnect()
-            login()
             break
-
-
-if __name__ == '__main__':
-    login()
