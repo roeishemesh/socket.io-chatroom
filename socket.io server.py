@@ -31,12 +31,12 @@ def check(sid, data):
     password = data.get("password")
     user = Users.select().where(Users.username == username, Users.password == password)
     if user.exists():
-        sio.emit('connected', to=sid)
         query = Users.update(is_online=True, sid=sid, last_login=datetime.datetime.now()).where(
             Users.username == username)
         query.execute()
+        return 'connected'
     else:
-        sio.emit('wrong login', to=sid)
+        return 'wrong login'
 
 
 @sio.on('send message to chatroom')
@@ -79,3 +79,4 @@ def send_rooms(sid):
 
 
 eventlet.wsgi.server(eventlet.listen(('localhost', 5000)), app)
+
